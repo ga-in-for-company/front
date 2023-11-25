@@ -1,0 +1,29 @@
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 18px;
+  }
+  .container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .extension {
+    display: inline-block;
+    border: 1px solid black;
+    padding: 5px;
+    margin-right: 5px;
+    position: relative;
+  }
+  .extension-text {
+    display: inline-block;
+    margin-right: 5px;
+  }
+  .extension-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+  }
