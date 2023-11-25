@@ -1,7 +1,19 @@
 import "./style.css";
 
+let dataToSend = {};
+
 window.addEventListener("DOMContentLoaded", async function () {
-  const response = await fetch(`${process.env.BASE_URL}`, {
+  const checkboxNames = ["bat", "cmd", "com", "cpl", "exe", "scr", "js"];
+  checkboxNames.forEach((name) => {
+    const checkboxElement = document.getElementById(name);
+    if (checkboxElement) {
+      checkboxElement.addEventListener("click", function () {
+        setCheckboxData(this);
+      });
+    }
+  });
+
+  const response = await fetch(`${process.env.BASE_URL}/extension`, {
     method: "GET",
   });
   if (response.status == 200) {
@@ -11,37 +23,56 @@ window.addEventListener("DOMContentLoaded", async function () {
   }
 });
 
-document
-  .getElementById("addExtensionButton")
-  .addEventListener("click", addExtension);
-
-function ynCheck(obj) {
+async function setCheckboxData(obj) {
   const checked = obj.checked;
-  checked ? (obj.value = "Y") : (obj.value = "N");
-
-  // API 호출 - 상태를 DB에 저장
-  saveStatusToDB(obj.id, obj.value)
-    .then(() => {
-      console.log("상태가 DB에 저장되었습니다.");
-    })
-    .catch((error) => {
-      console.error("API 호출 오류:", error);
-    });
+  if (checked) {
+    dataToSend[obj.name] = {
+      name: obj.name,
+      custom_or_fixed: "fixed",
+      is_checked: 1,
+    };
+  } else {
+    dataToSend[obj.name] = {
+      name: obj.name,
+      custom_or_fixed: "fixed",
+      is_checked: 0,
+    };
+  }
+  await sendExtension();
 }
 
-const customExtensions = [];
-
-function addExtension() {
+async function addCustomExtension() {
   const inputElement = document.getElementById("extensionInput");
   const extensionValue = inputElement.value;
 
   if (extensionValue.trim() !== "") {
-    customExtensions.push(extensionValue);
+    dataToSend[extensionValue] = {
+      name: extensionValue,
+      custom_or_fixed: "custom",
+      is_checked: 0,
+    };
     inputElement.value = "";
-
     updateExtensionOutput();
   }
+  await sendExtension();
+  async function sendExtension() {
+    const response = await fetch(`${process.env.BASE_URL}/extension`, {
+      method: "POST",
+      body: JSON.stringify(dataToSend),
+    });
+    if (response.status == 200) {
+      const data = await response.json();
+      alert("데이터 저장 완료");
+    } else {
+    }
+  }
 }
+
+document
+  .getElementById("addExtensionButton")
+  .addEventListener("click", addCustomExtension);
+
+const customExtensions = [];
 
 function handleExtensionInput(event) {
   if (event.keyCode === 13) {
@@ -90,25 +121,6 @@ function removeExtension(index) {
     });
 }
 
-// API 호출 - DB에서 데이터를 가져오는 함수
-function fetchDataFromDB() {
-  // 여기에 DB에서 데이터를 가져오는 API 호출 코드를 작성하세요
-  // 예시: axios.get('/api/fetch-data')
-  return new Promise((resolve, reject) => {
-    // 가져온 데이터를 resolve()에 전달
-    resolve({
-      bat: "Y",
-      cmd: "N",
-      com: "Y",
-      cpl: "N",
-      exe: "Y",
-      scr: "N",
-      js: "Y",
-      customExtensions: ["txt", "doc", "pdf"],
-    });
-  });
-}
-
 function applyDataToUI(data) {
   data.forEach(function (item) {
     if (item.custom_or_fixed === "fixed") {
@@ -119,17 +131,6 @@ function applyDataToUI(data) {
         checkbox.checked = false;
       }
     }
-  });
-}
-
-// API 호출 - 상태를 DB에 저장하는 함수
-function saveStatusToDB(id, status) {
-  // 여기에 상태를 DB에 저장하는 API 호출 코드를 작성하세요
-  // 예시: axios.post('/api/save-status', { id: id, status: status })
-  return new Promise((resolve, reject) => {
-    // API 호출 성공 시 resolve() 호출
-    // API 호출 실패 시 reject() 호출
-    resolve();
   });
 }
 
