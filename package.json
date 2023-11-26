@@ -6,8 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode=production",
-    "start": "webpack serve --open --mode=development",
-    "deploy": "gh-pages -d dist"
+    "start": "webpack serve --open --mode=development"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +22,7 @@
   "dependencies": {
     "dotenv": "^16.3.1",
     "dotenv-webpack": "^8.0.1",
-    "html-webpack-plugin": "^5.5.3"
+    "html-webpack-plugin": "^5.5.3",
+    "webpack-s3-plugin": "^1.2.0-rc.0"
   }
 }

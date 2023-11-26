@@ -1,7 +1,5 @@
 import "./style.css";
 
-let dataToSend = {};
-
 window.addEventListener("DOMContentLoaded", async function () {
   const checkboxNames = ["bat", "cmd", "com", "cpl", "exe", "scr", "js"];
   checkboxNames.forEach((name) => {
@@ -24,47 +22,45 @@ window.addEventListener("DOMContentLoaded", async function () {
 });
 
 async function setCheckboxData(obj) {
+  const name = obj.name;
   const checked = obj.checked;
-  if (checked) {
-    dataToSend[obj.name] = {
-      name: obj.name,
+
+  if (checked === true) {
+    const createExtensionDto = {
+      name: name,
       custom_or_fixed: "fixed",
       is_checked: 1,
     };
-  } else {
-    dataToSend[obj.name] = {
-      name: obj.name,
-      custom_or_fixed: "fixed",
+    await sendExtension(createExtensionDto);
+  } else if (checked !== true) {
+    const updateExtensionDto = {
+      name: name,
       is_checked: 0,
     };
+    await updateExtension(name, updateExtensionDto);
   }
-  await sendExtension();
 }
 
-async function addCustomExtension() {
+function addCustomExtension() {
   const inputElement = document.getElementById("extensionInput");
-  const extensionValue = inputElement.value;
+  const extensionValue = inputElement.value.trim();
 
-  if (extensionValue.trim() !== "") {
-    dataToSend[extensionValue] = {
+  if (extensionValue !== "") {
+    const createExtensionDto = {
       name: extensionValue,
       custom_or_fixed: "custom",
       is_checked: 0,
     };
-    inputElement.value = "";
-    updateExtensionOutput();
-  }
-  await sendExtension();
-  async function sendExtension() {
-    const response = await fetch(`${process.env.BASE_URL}/extension`, {
-      method: "POST",
-      body: JSON.stringify(dataToSend),
-    });
-    if (response.status == 200) {
-      const data = await response.json();
-      alert("데이터 저장 완료");
-    } else {
-    }
+    sendExtension(createExtensionDto)
+      .then(() => {
+        // 성공적으로 추가된 경우
+        customExtensions.push(extensionValue);
+        updateExtensionOutput();
+        inputElement.value = "";
+      })
+      .catch((error) => {
+        console.error("API 호출 오류:", error);
+      });
   }
 }
 
@@ -107,11 +103,10 @@ function updateExtensionOutput() {
   }
 }
 
-function removeExtension(index) {
-  const extension = customExtensions[index];
+async function removeExtension(index) {
+  const name = customExtensions[index];
 
-  // API 호출 - 확장자를 DB에서 삭제
-  deleteExtensionFromDB(extension)
+  await deleteExtension(name)
     .then(() => {
       customExtensions.splice(index, 1);
       updateExtensionOutput();
@@ -134,13 +129,60 @@ function applyDataToUI(data) {
   });
 }
 
-// API 호출 - 확장자를 DB에서 삭제하는 함수
-function deleteExtensionFromDB(extension) {
-  // 여기에 확장자를 DB에서 삭제하는 API 호출 코드를 작성하세요
-  // 예시: axios.delete(`/api/delete-extension/${extension}`)
-  return new Promise((resolve, reject) => {
-    // API 호출 성공 시 resolve() 호출
-    // API 호출 실패 시 reject() 호출
-    resolve();
-  });
+//POST api call
+async function sendExtension(createExtensionDto) {
+  try {
+    const response = await fetch(`${process.env.BASE_URL}/extension`, {
+      method: "POST",
+      body: JSON.stringify(createExtensionDto),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.status === 201) {
+      await response.json();
+      alert("데이터 저장 완료");
+    } else {
+      // 오류 처리
+    }
+  } catch (error) {
+    // 예외 처리
+  }
+}
+
+//PUT api call
+async function updateExtension(name, updateExtensionDto) {
+  try {
+    const response = await fetch(`${process.env.BASE_URL}/extension/${name}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updateExtensionDto),
+    });
+    if (response.ok) {
+      await response.json();
+      // 업데이트된 데이터 처리
+    } else {
+      // 오류 처리
+    }
+  } catch (error) {
+    // 예외 처리
+  }
+}
+
+//DELETE api call
+async function deleteExtension(name) {
+  try {
+    const response = await fetch(`${process.env.BASE_URL}/extension/${name}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      // 삭제 성공 처리
+    } else {
+      // 오류 처리
+    }
+  } catch (error) {
+    // 예외 처리
+  }
 }

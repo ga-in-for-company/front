@@ -2,6 +2,8 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const dotenv = require("dotenv").config();
 const webpack = require("webpack");
+const S3Plugin = require("webpack-s3-plugin");
+
 module.exports = {
   entry: "./src/index.js",
   output: {
@@ -23,12 +25,21 @@ module.exports = {
     new webpack.DefinePlugin({
       "process.env.BASE_URL": JSON.stringify(process.env.BASE_URL),
     }),
+    new S3Plugin({
+      s3Options: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        region: "ap-northeast-2",
+      },
+      s3UploadOptions: {
+        Bucket: "gain-flow",
+      },
+    }),
   ],
   devServer: {
     static: {
       directory: path.resolve(__dirname, "dist"),
     },
-    hot: true,
     port: 8080,
   },
 };
