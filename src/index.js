@@ -5,8 +5,8 @@ window.addEventListener("DOMContentLoaded", async function () {
   checkboxNames.forEach((name) => {
     const checkboxElement = document.getElementById(name);
     if (checkboxElement) {
-      checkboxElement.addEventListener("click", function () {
-        setCheckboxData(this);
+      checkboxElement.addEventListener("click", async function () {
+        await setCheckboxData(this);
       });
     }
   });
@@ -32,12 +32,13 @@ async function setCheckboxData(obj) {
       is_checked: 1,
     };
     await sendExtension(createExtensionDto);
-  } else if (checked !== true) {
-    const updateExtensionDto = {
+  } else {
+    const createExtensionDto = {
       name: name,
+      custom_or_fixed: "fixed",
       is_checked: 0,
     };
-    await updateExtension(name, updateExtensionDto);
+    await sendExtension(createExtensionDto);
   }
 }
 
@@ -53,7 +54,6 @@ function addCustomExtension() {
     };
     sendExtension(createExtensionDto)
       .then(() => {
-        // 성공적으로 추가된 경우
         customExtensions.push(extensionValue);
         updateExtensionOutput();
         inputElement.value = "";
@@ -127,9 +127,23 @@ function applyDataToUI(data) {
       }
     }
   });
+  const customItems = data.filter((item) => item.custom_or_fixed === "custom");
+  const customNames = customItems.map((item) => item.name);
+
+  customExtensions.length = 0;
+  Array.prototype.push.apply(customExtensions, customNames);
+
+  updateExtensionOutput();
+  updateCountOutput();
 }
 
-//POST api call
+function updateCountOutput() {
+  const outputElement = document.getElementById("countCustomExtension");
+  const countElement = document.createElement("span");
+  countElement.textContent = `${customExtensions.length}/20`;
+  outputElement.appendChild(countElement);
+}
+
 async function sendExtension(createExtensionDto) {
   try {
     const response = await fetch(`${process.env.BASE_URL}/extension`, {
@@ -142,15 +156,12 @@ async function sendExtension(createExtensionDto) {
     if (response.status === 201) {
       await response.json();
       alert("데이터 저장 완료");
-    } else {
-      // 오류 처리
     }
   } catch (error) {
-    // 예외 처리
+    console.error(error);
   }
 }
 
-//PUT api call
 async function updateExtension(name, updateExtensionDto) {
   try {
     const response = await fetch(`${process.env.BASE_URL}/extension/${name}`, {
@@ -162,27 +173,20 @@ async function updateExtension(name, updateExtensionDto) {
     });
     if (response.ok) {
       await response.json();
-      // 업데이트된 데이터 처리
     } else {
-      // 오류 처리
     }
   } catch (error) {
-    // 예외 처리
+    console.error(error);
   }
 }
 
-//DELETE api call
 async function deleteExtension(name) {
   try {
     const response = await fetch(`${process.env.BASE_URL}/extension/${name}`, {
       method: "DELETE",
     });
-    if (response.ok) {
-      // 삭제 성공 처리
-    } else {
-      // 오류 처리
-    }
+    updateCountOutput();
   } catch (error) {
-    // 예외 처리
+    console.error(error);
   }
 }
