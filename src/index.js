@@ -139,7 +139,6 @@ function applyDataToUI(data) {
 
 function updateCountOutput() {
   const outputElement = document.getElementById("countCustomExtension");
-  outputElement.innerHTML = "";
   const countElement = document.createElement("span");
   countElement.textContent = `${customExtensions.length}/20`;
   outputElement.appendChild(countElement);
