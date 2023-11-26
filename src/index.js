@@ -139,6 +139,7 @@ function applyDataToUI(data) {
 
 function updateCountOutput() {
   const outputElement = document.getElementById("countCustomExtension");
+  outputElement.innerHTML = "";
   const countElement = document.createElement("span");
   countElement.textContent = `${customExtensions.length}/20`;
   outputElement.appendChild(countElement);
@@ -182,10 +183,10 @@ async function updateExtension(name, updateExtensionDto) {
 
 async function deleteExtension(name) {
   try {
-    const response = await fetch(`${process.env.BASE_URL}/extension/${name}`, {
+    await fetch(`${process.env.BASE_URL}/extension/${name}`, {
       method: "DELETE",
     });
-    updateCountOutput();
+    await location.reload();
   } catch (error) {
     console.error(error);
   }
