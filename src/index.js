@@ -42,7 +42,7 @@ async function setCheckboxData(obj) {
   }
 }
 
-function addCustomExtension() {
+async function addCustomExtension() {
   const inputElement = document.getElementById("extensionInput");
   const extensionValue = inputElement.value.trim();
 
@@ -52,10 +52,11 @@ function addCustomExtension() {
       custom_or_fixed: "custom",
       is_checked: 0,
     };
-    sendExtension(createExtensionDto)
+    await sendExtension(createExtensionDto)
       .then(() => {
         customExtensions.push(extensionValue);
         updateExtensionOutput();
+        updateCountOutput();
         inputElement.value = "";
       })
       .catch((error) => {
@@ -186,7 +187,7 @@ async function deleteExtension(name) {
     await fetch(`${process.env.BASE_URL}/extension/${name}`, {
       method: "DELETE",
     });
-    await location.reload();
+    location.reload();
   } catch (error) {
     console.error(error);
   }
